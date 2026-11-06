@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><title>RelateAnything TD Runtime</title></head><body style="margin:0;background:transparent;overflow:hidden"><canvas id="overlay" style="width:100vw;height:100vh;display:block"></canvas><a href="https://github.com/Maelic/RelateAnything" target="_blank" rel="noopener noreferrer" style="position:fixed;bottom:4px;left:4px;background:#000b;color:white;font:11px sans-serif;padding:3px;z-index:10">Based on RelateAnything by Maëlic Neau · Built with DINOv3</a><div id="status" style="display:none">Loading models</div><script>
+'use strict';
+let worker=null,counter=0,pending=new Map(),socket,ready=false,backend='',manifestData=null,detectorId='yolo26n',customRevision=null,lastStatus='Loading models',workerFailure=null,lastProgress='';
+const send=(x)=>{if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(x));};
+const status=(s)=>{lastStatus=s;document.getElementById('status').textContent=s;send({type:'loading',message:s});};
+function failWorker(message){workerFailure='Worker error: '+message;status(workerFailure);for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error(workerFailure));}pending.clear();}
+try { worker=new Worker('/js/worker.js'); }
+catch(e) { failWorker(e.message||String(e)); }
+if(worker){
+ worker.onmessage=({data:m})=>{if(m.type==='done'||m.type==='error'){let p=pending.get(m.req);if(!p)return;pending.delete(m.req);clearTimeout(p.timer);m.type==='done'?p.resolve(m):p.reject(Error(m.msg));}else if(m.type==='stage'){status(m.text)}else if(m.type==='progress' && m.total){let pct=Math.floor(20*m.loaded/m.total)*5,key=m.role+':'+pct;if(key!==lastProgress){lastProgress=key;status('Loading '+m.role+' '+pct+'%');}}};
+ worker.onerror=(event)=>{if(event.preventDefault)event.preventDefault();failWorker(event.message||'unable to start browser worker');};
+ worker.onmessageerror=()=>failWorker('could not read worker message');
+}
+function call(type, args={}, transfer=[]){return new Promise((resolve,reject)=>{if(workerFailure){reject(Error(workerFailure));return;}let req=++counter;let timer=setTimeout(()=>status('Still working: '+type+' (check TD version if this persists)'),60000);pending.set(req,{resolve,reject,timer});try{worker.postMessage({type,req,...args},transfer);}catch(e){clearTimeout(timer);pending.delete(req);reject(e);}});}
+let opts={detConf:0.35,maxDet:12,topk:100,threshold:0.0};let overlayThreshold=0.2,clearTimer;
+function draw(r){
+ const c=document.getElementById('overlay');c.width=r.W;c.height=r.H;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+ x.font=Math.max(12,Math.round(c.width/45))+'px sans-serif';x.lineWidth=Math.max(2,c.width/250);x.textBaseline='top';
+ r.boxes.forEach((b,i)=>{x.strokeStyle='#00f4b0';x.strokeRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);let t=r.labels[i]+' '+Math.round(r.confs[i]*100)+'%';let w=x.measureText(t).width;x.fillStyle='#002e29';x.fillRect(b[0],Math.max(0,b[1]-19),w+8,19);x.fillStyle='white';x.fillText(t,b[0]+4,Math.max(0,b[1]-17));});
+ r.triplets.filter(t=>t.score>=overlayThreshold).slice(0,8).forEach(t=>{let a=r.boxes[t.s],b=r.boxes[t.o];if(!a||!b)return;let ax=(a[0]+a[2])/2,ay=(a[1]+a[3])/2,bx=(b[0]+b[2])/2,by=(b[1]+b[3])/2,mx=(ax+bx)/2,my=(ay+by)/2;x.strokeStyle='#ffcc44';x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.stroke();let label=t.predicate+' '+Math.round(t.score*100)+'%',w=x.measureText(label).width;x.fillStyle='#3b2d00';x.fillRect(mx-w/2-4,my-10,w+8,20);x.fillStyle='white';x.fillText(label,mx-w/2,my-8);});
+ clearTimeout(clearTimer);clearTimer=setTimeout(()=>x.clearRect(0,0,c.width,c.height),5000);
+}
+function connect(){socket=new WebSocket('ws://'+location.host+'/ws');socket.binaryType='arraybuffer';
+ socket.onopen=()=>{if(ready)send({type:'ready',backend});else status(lastStatus);};
+ socket.onclose=()=>{const c=document.getElementById('overlay');c.getContext('2d').clearRect(0,0,c.width,c.height);setTimeout(connect,1500);};
+ socket.onmessage=async ({data})=>{try {
+  if(typeof data==='string'){let config=JSON.parse(data);if(config.type==='config'){if(config.detector && config.detector!==detectorId){status('Loading detector '+config.detector);let spec=manifestData.detectors.find(x=>x.id===config.detector);if(!spec)throw Error('Unknown detector');let loaded=await call('loadDetector',{spec,ep:'webgpu'});detectorId=config.detector;status('Detector ready: '+loaded.ep);}let custom=config.custom || {enabled:false};
+   if(custom.enabled && custom.revision!==customRevision){
+     try { status('Loading custom model');
+       let spec={id:'custom-'+custom.revision, imgsz:640, files:[{path:'custom/model.onnx',size:custom.size,sha256:custom.revision}]};
+       let loaded=await call('loadCustom',{spec,classes:custom.classes,ep:'webgpu'});customRevision=custom.revision;
+       send({type:'custom_status',ok:true,message:'Ready ('+loaded.ep+')'});
+     } catch(e) {await call('unloadCustom');customRevision=null;custom={enabled:false};send({type:'custom_status',ok:false,message:String(e)});}
+   } else if(!custom.enabled && customRevision!==null){await call('unloadCustom');customRevision=null;}
+   opts.customEnabled=!!custom.enabled;opts.customConfidence=custom.confidence ?? 0.5;opts.customMergeIou=custom.merge_iou ?? 0.7;
+   opts.detConf=config.confidence;opts.maxDet=config.max_boxes;overlayThreshold=config.overlay_threshold ?? 0.2;await call('setPredicates',{names:config.tags});send({type:'configured',tags:config.tags});}return;}
+  let d=new DataView(data);if(d.byteLength<12||d.getUint32(0)!==0x54445231)throw Error('Invalid frame');
+  let w=d.getUint32(4),h=d.getUint32(8),rgb=new Uint8Array(data,12);if(rgb.length!==w*h*3)throw Error('Invalid frame size');
+  let rgba=new Uint8ClampedArray(w*h*4);for(let i=0,j=0;i<rgb.length;i+=3,j+=4){rgba[j]=rgb[i];rgba[j+1]=rgb[i+1];rgba[j+2]=rgb[i+2];rgba[j+3]=255;}
+  let bitmap=await createImageBitmap(new ImageData(rgba,w,h));let response=await call('infer',{bitmap,opts},[bitmap]);let r=response.result;draw(r);
+  send({type:'result',width:w,height:h,objects:r.boxes.map((box,index)=>({index,label:r.labels[index],score:r.confs[index],box,source:(r.sources||[])[index]||'builtin'})),relations:r.triplets.map(t=>({subject:t.s,object:t.o,tag:t.predicate,score:t.score})),inference_ms:r.timings.total});
+ }catch(e){send({type:'error',message:String(e)});}};
+}
+connect();
+async function main(){
+ const manifest=await (await fetch('/models/manifest.json')).json();manifestData=manifest;
+ status('Preparing browser runtime');await call('init',{base:location.origin+'/'});status('Loading YOLO');
+ let detector=await call('loadDetector',{spec:manifest.detectors.find(x=>x.id==='yolo26n'),ep:'webgpu'});status('Loading text encoder');
+ await call('loadTextEncoder',{role:'predicate',spec:manifest.text_encoders.predicate});status('Loading relationship model');
+ let relation=await call('loadRelation',{spec:manifest.relation,predicates:['riding','beside'],ep:'webgpu'});
+ backend=detector.ep+' / '+relation.ep;ready=true;status('Ready: '+backend);send({type:'ready',backend});
+}
+main().catch(e=>{status('Error: '+e);send({type:'error',message:String(e)});});
+</script></body></html>

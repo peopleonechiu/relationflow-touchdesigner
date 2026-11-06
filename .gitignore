@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+*.tox
+*.toe
+*.onnx
+*.data0
+*.data1
+*.pt
+browser/vendor/
+browser/assets/

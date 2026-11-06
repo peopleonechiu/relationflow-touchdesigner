@@ -1,0 +1,324 @@
+{
+ "version": 2,
+ "generated": "2026-08-27",
+ "relation": {
+  "id": "relsgg-vits16plus",
+  "name": "RelateAnything ViT-S+ (DINOv3, full recipe)",
+  "precision": "fp16 weights, fp32 compute",
+  "files": [
+   {
+    "path": "models/relateanything_vits16plus_w16.onnx",
+    "size": 1172871,
+    "sha256": "1aa35751957122072b4f7d34cb4d097349af677e46e3734b9a9975e909a88b37"
+   },
+   {
+    "path": "models/relateanything_vits16plus_w16.data0",
+    "size": 93858432,
+    "sha256": "9c4c7ce57381d36778cce42cfeb9664ee7c9cfa5d9593541ffab6a6d0d492bc0"
+   },
+   {
+    "path": "models/relateanything_vits16plus_w16.data1",
+    "size": 9699328,
+    "sha256": "f14124d07be26a7c93aa32a52df3cc5908d39a4b79680ce22a4b3de533d39399"
+   }
+  ],
+  "meta": {
+   "img_size": 448,
+   "max_boxes": 32,
+   "final_budget": 128,
+   "text_dim": 512,
+   "calibration": {
+    "a": 0.5651,
+    "b": -1.9623
+   },
+   "score_contract": "sigmoid(a * (pred_logit + w * pair_logit) + b)",
+   "default_predicates": [
+    "wearing",
+    "riding",
+    "playing",
+    "sitting on",
+    "sitting at",
+    "holding",
+    "sitting in",
+    "looking at",
+    "using",
+    "watching",
+    "standing on",
+    "carrying",
+    "talking to",
+    "smiling at",
+    "standing beside",
+    "walking past",
+    "posing with",
+    "leaning against",
+    "part of",
+    "resting on",
+    "on",
+    "covering",
+    "inside",
+    "on top of",
+    "contained in",
+    "hanging from",
+    "surrounding",
+    "attached to",
+    "in front of",
+    "beside",
+    "to the left of",
+    "to the right of",
+    "behind",
+    "above",
+    "below"
+   ],
+   "run_name": "full_v42cfg_wv2-512_lora12_mixvghico0.05_sig0.25_btd0.3_negmask_def4h8v3n2_vits16plus_r0_lr4e-4_ep12_newopt_spe_gsq_pe16_bg0.05_ntaps_ms0.5-1.5_hicov2",
+   "git_sha": "e9ea42aed60f766f12ad19d51709129c50110a3b",
+   "epoch": 12,
+   "backbone": "DINOv3 ViT-S+/16 (LVD-1689M)",
+   "text_student_sha256": "e0317830b68ea51e6711fc90d4a35954d0528e5bd78a8d5afd966601ce4ed119"
+  },
+  "bank": "assets/banks/predicate_bank.json",
+  "license": "DINOv3 License (backbone derivative)",
+  "license_url": "https://ai.meta.com/resources/models-and-libraries/dinov3-license/"
+ },
+ "detectors": [
+  {
+   "id": "yoloe-11s-pf",
+   "name": "YOLOE-11s prompt-free",
+   "description": "4,585 built-in classes (LVIS+Objects365 vocabulary). Detects 'anything' with no class list.",
+   "kind": "boxes_conf_cls",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yoloe-11s-pf.onnx",
+     "size": 23983366,
+     "sha256": "c224f06d36924c4a556e6663fa46b31d114559e23640caeae191e6abf3f02617"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yoloe-11s-seg-pf.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.25,
+   "recommended": true,
+   "masks": true,
+   "mask_dim": 32,
+   "mask_stride": 4,
+   "classes": "models/yoloe-11s-pf.classes.json",
+   "num_classes": 4585
+  },
+  {
+   "id": "yoloe-11s-text",
+   "name": "YOLOE-11s text-prompt",
+   "description": "Open-vocabulary: the class list is a graph input, re-parameterised live from the 1,760-name bank or the MobileCLIP text encoder.",
+   "kind": "boxes_conf_cls",
+   "vocab": "dynamic",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yoloe-11s-text.onnx",
+     "size": 23988211,
+     "sha256": "9dd5bce452bcaa3f53eb87fe0d9e10b3792decc2ed08e5806eabb3bea6aada85"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yoloe-11s-seg.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.15,
+   "masks": true,
+   "mask_dim": 32,
+   "mask_stride": 4,
+   "bank": "assets/banks/yoloe-11s_classbank.json",
+   "text_encoder": "mobileclip-blt-text",
+   "txt_feats_dim": 512
+  },
+  {
+   "id": "yoloworld-s-megasg497",
+   "name": "YOLO-World v2-S \u00b7 MEGASG-497",
+   "description": "Re-parameterised to the 497 categories the relation model was trained with (the laptop-bundle detector).",
+   "kind": "boxes_conf_cls",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yoloworld-s-megasg497.onnx",
+     "size": 26782733,
+     "sha256": "e011ece40fe135dca40edd727c92452e707fcadda85c422787773faf6efea3b9"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yolov8s-worldv2.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.15,
+   "classes": "models/yoloworld-s-megasg497.classes.json",
+   "num_classes": 497
+  },
+  {
+   "id": "yolo26s-seg",
+   "name": "YOLO26s-seg \u00b7 COCO-80",
+   "description": "NMS-free end-to-end head that also returns instance masks \u2014 the cheapest way to get masks.",
+   "kind": "e2e_xyxy_seg",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yolo26s-seg.onnx",
+     "size": 21122114,
+     "sha256": "f6fcf56e47b5abc43b9701af62367b08460c6fc1df81bd5e628c5a863df28942"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yolo26s-seg.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.25,
+   "masks": true,
+   "mask_dim": 32,
+   "mask_stride": 4,
+   "classes": "models/yolo26s-seg.classes.json",
+   "num_classes": 80
+  },
+  {
+   "id": "fastsam-s",
+   "name": "FastSAM-s \u00b7 class-agnostic",
+   "description": "Segments everything the way SAM does, with no class list at all \u2014 the page names each instance by its colour. Relations do not read object names, so the graph is unaffected.",
+   "kind": "boxes_conf_cls",
+   "vocab": "agnostic",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/fastsam-s.onnx",
+     "size": 23819841,
+     "sha256": "172d3fcf6266db1a62aec5398879e112037c1056debf9114ec19be551ca27e52"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets FastSAM-s.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.4,
+   "masks": true,
+   "mask_dim": 32,
+   "mask_stride": 4,
+   "labels": "color",
+   "classes": "models/fastsam-s.classes.json",
+   "num_classes": 1
+  },
+  {
+   "id": "yolo12s",
+   "name": "YOLO12s \u00b7 COCO-80",
+   "description": "Attention-centric YOLO12. Closed-set COCO, host-side NMS.",
+   "kind": "boxes_conf_cls",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yolo12s.onnx",
+     "size": 18876917,
+     "sha256": "8c18bf66d2de4c3dccb9b7cb5993f9f940032f5e7c680d0ef6e12c372f4210bb"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yolo12s.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.25,
+   "classes": "models/yolo12s.classes.json",
+   "num_classes": 80
+  },
+  {
+   "id": "yolo26n",
+   "name": "YOLO26n \u00b7 COCO-80",
+   "description": "Closed-set COCO detector, NMS-free end-to-end head. Smallest and fastest.",
+   "kind": "e2e_xyxy",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yolo26n.onnx",
+     "size": 5114918,
+     "sha256": "1ed9a66cb2b803f50ffc1ae2230e582c08df1c8dca218cc9ba0fa68176938d4d"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yolo26n.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.2,
+   "classes": "models/yolo26n.classes.json",
+   "num_classes": 80
+  },
+  {
+   "id": "yolo26s",
+   "name": "YOLO26s \u00b7 COCO-80",
+   "description": "Closed-set COCO detector, NMS-free end-to-end head.",
+   "kind": "e2e_xyxy",
+   "vocab": "fixed",
+   "imgsz": 640,
+   "files": [
+    {
+     "path": "models/yolo26s.onnx",
+     "size": 19300573,
+     "sha256": "4d129409fafc0be5828a2b639c9984cd6c7c89b7ca836a8956627bc0a9e2f8ed"
+    }
+   ],
+   "precision": "fp16 weights, fp32 compute",
+   "upstream": "ultralytics/assets yolo26s.pt (ultralytics 8.4.101)",
+   "license": "AGPL-3.0",
+   "license_url": "https://github.com/ultralytics/ultralytics/blob/main/LICENSE",
+   "default_conf": 0.2,
+   "classes": "models/yolo26s.classes.json",
+   "num_classes": 80
+  }
+ ],
+ "text_encoders": {
+  "predicate": {
+   "id": "predicate-student-v2-512",
+   "name": "Predicate text encoder (distilled dino.txt student)",
+   "files": [
+    {
+     "path": "models/predicate_encoder_w16.onnx",
+     "size": 22800080,
+     "sha256": "bc626b73fa065b2c15024b6d8ab7e68b5a14d681ad1f3766e7f074bd70b06691"
+    }
+   ],
+   "input": "ids [templates, length] int64 (CLIP BPE, max_len 32, pad 0)",
+   "outputs": "W [512] unit-norm, alpha [] gate",
+   "templates": [
+    "{p}",
+    "one object is {p} another object",
+    "a photo of something {p} something"
+   ],
+   "max_len": 32,
+   "license": "DINOv3 License (dino.txt distillation derivative)"
+  },
+  "mobileclip-blt-text": {
+   "id": "mobileclip-blt-text",
+   "name": "MobileCLIP-BLT text encoder (YOLOE's)",
+   "files": [
+    {
+     "path": "models/mobileclip_blt_text_w16.onnx",
+     "size": 175342,
+     "sha256": "77bfb759523f2c27a230ba92d422d2efc2e55364c24b272dc25cfe2cd78b66b3"
+    },
+    {
+     "path": "models/mobileclip_blt_text_w16.data0",
+     "size": 93377536,
+     "sha256": "d99a67687207bd84f2ffc0a38232e40dfdaa74a901d7d77a55520cb37a9fb7db"
+    },
+    {
+     "path": "models/mobileclip_blt_text_w16.data1",
+     "size": 33554432,
+     "sha256": "57129b805fbdaaf52692aa00edbe64299d3fca4670022612de04f1173fa204ca"
+    }
+   ],
+   "input": "tokens [batch, 77] int32 (CLIP BPE, zero-padded)",
+   "outputs": "feat [batch, 512] unit-norm",
+   "ctx": 77,
+   "license": "Apple ML MobileCLIP license",
+   "license_url": "https://github.com/apple/ml-mobileclip/blob/main/LICENSE_weights_data",
+   "upstream": "ultralytics/assets mobileclip_blt.ts (text tower only)"
+  }
+ }
+}
