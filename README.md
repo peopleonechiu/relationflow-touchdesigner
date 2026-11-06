@@ -1,8 +1,20 @@
-# TouchDesigner relationship detection prototype
+# RelationFlow — relationship detection for TouchDesigner
 
 **Based on [RelateAnything by Maëlic Neau](https://github.com/Maelic/RelateAnything). Built with DINOv3.**
 
 An experimental TouchDesigner integration for object detection and open-vocabulary relationship scoring. The prototype combines a local browser runtime, YOLO object detection, and the upstream relationship model. The parameter interface supports relationship phrases, object classes, confidence thresholds and an overlay; output is designed for CHOP and DAT workflows.
+
+## Interface preview
+
+The following screenshots were provided by the project owner and show an earlier prototype under its previous working name. The current local TOX has been renamed RelationFlow; screenshots of the updated interface are still pending.
+
+### Parameters
+
+![Earlier prototype parameter controls](docs/images/previous-parameters.png)
+
+### Object CHOP output
+
+![Earlier prototype object CHOP output](docs/images/previous-object-chop.png)
 
 ## Availability and limitations
 
