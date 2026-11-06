@@ -4,17 +4,19 @@
 
 An experimental TouchDesigner integration for object detection and open-vocabulary relationship scoring. The prototype combines a local browser runtime, YOLO object detection, and the upstream relationship model. The parameter interface supports relationship phrases, object classes, confidence thresholds and an overlay; output is designed for CHOP and DAT workflows.
 
-## Interface preview
+## Detection and relationship output
 
-The following screenshots were provided by the project owner and show an earlier prototype under its previous working name. The current local TOX has been renamed RelationFlow; screenshots of the updated interface are still pending.
+![RelationFlow detecting a person, cup, and chair with holding and beside relationship lines](docs/images/relationflow-output.png)
 
-### Parameters
+Actual RelationFlow output using YOLO26n (80 classes) on an AI-generated test image. Green boxes identify detected objects; yellow lines show scored relationships for the configured tags `holding` and `beside`. Scores are model outputs and are not guarantees of correctness.
 
-![Earlier prototype parameter controls](docs/images/previous-parameters.png)
+### YOLO CHOP
 
-### Object CHOP output
+![RelationFlow YOLO CHOP channels for person, cup, and chair](docs/images/relationflow-yolo-chop.png)
 
-![Earlier prototype object CHOP output](docs/images/previous-object-chop.png)
+### Relationship CHOP
+
+![RelationFlow relationship CHOP channels](docs/images/relationflow-relation-chop.png)
 
 ## Availability and limitations
 
