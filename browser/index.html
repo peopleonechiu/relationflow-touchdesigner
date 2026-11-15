@@ -43,7 +43,14 @@ function connect(){socket=new WebSocket('ws://'+location.host+'/ws');socket.bina
 }
 connect();
 async function main(){
- const manifest=await (await fetch('/models/manifest.json')).json();manifestData=manifest;
+ status('Reading model manifest');
+ const manifestTimer=setTimeout(()=>status('Still reading model manifest; check local server and port'),60000);
+ let manifest;
+ try {
+   const response=await fetch('/models/manifest.json');
+   if(response.ok === false)throw Error('Model manifest HTTP '+response.status);
+   manifest=await response.json();manifestData=manifest;
+ } finally { clearTimeout(manifestTimer); }
  status('Preparing browser runtime');await call('init',{base:location.origin+'/'});status('Loading YOLO');
  let detector=await call('loadDetector',{spec:manifest.detectors.find(x=>x.id==='yolo26n'),ep:'webgpu'});status('Loading text encoder');
  await call('loadTextEncoder',{role:'predicate',spec:manifest.text_encoders.predicate});status('Loading relationship model');

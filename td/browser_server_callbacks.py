@@ -1,6 +1,13 @@
 import mimetypes
 from pathlib import Path
 
+# Do not rely on the host OS MIME registry for browser runtime files.
+_BROWSER_MIME = {
+    '.html': 'text/html', '.js': 'application/javascript',
+    '.mjs': 'application/javascript', '.wasm': 'application/wasm',
+    '.json': 'application/json', '.onnx': 'application/octet-stream',
+}
+
 def onHTTPRequest(dat, request, response):
     name = request['uri'].split('?', 1)[0].lstrip('/') or 'index.html'
     try:
@@ -18,7 +25,7 @@ def onHTTPRequest(dat, request, response):
             data = parent().vfs[name].byteArray
         response['statusCode'] = 200
         response['statusReason'] = 'OK'
-        response['content-type'] = mimetypes.guess_type(name)[0] or 'application/octet-stream'
+        response['content-type'] = _BROWSER_MIME.get(Path(name).suffix.lower()) or mimetypes.guess_type(name)[0] or 'application/octet-stream'
         response['Cross-Origin-Opener-Policy'] = 'same-origin'
         response['Cross-Origin-Embedder-Policy'] = 'require-corp'
         response['data'] = data

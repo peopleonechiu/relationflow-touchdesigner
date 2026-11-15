@@ -20,7 +20,7 @@ Actual RelationFlow output using YOLO26n (80 classes) on an AI-generated test im
 
 ## Availability and limitations
 
-This is an initial **source snapshot**, not a downloadable or reproducible TOX release. The TOX, model weights, ONNX Runtime binaries, tokenizer data, and sample media are not included. The repository does not yet include an automated builder or all corresponding build/export materials. Do not expect cloning this repository to produce a working plugin.
+The repository is a source snapshot; the TOX, model weights, ONNX Runtime binaries, tokenizer data, and sample media are not stored in Git. The repository does not yet include an automated builder or all build/export materials, so cloning it does not produce a working plugin. A packaged experimental TOX is available in Releases; see its licensing notices and compatibility limitations.
 
 The local prototype was tested on one Apple Silicon Mac with TouchDesigner 2025.33230. Windows and other Macs have not been verified. Both an 8 GB MacBook Air and an 8 GB Windows computer have been reported to remain at loading; the cause is not yet known. These reports do not establish whether RAM capacity is the cause. The files in this repository can differ from the locally exported prototype.
 

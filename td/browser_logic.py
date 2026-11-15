@@ -221,12 +221,28 @@ def receive(message):
 
 def tick():
     if not state['initialized']:
-        reset('loading')
+        reset('Waiting for browser connection')
         state['initialized'] = True
     now = time.monotonic()
-    if comp().par.Run.eval() and client is None and now - state.get('last_reload', 0) > 5:
-        state['last_reload'] = now
-        comp().op('browser_runtime').par.reload.pulse()
+    if not comp().par.Run.eval():
+        state.pop('browser_wait_since', None)
+        state.pop('browser_wait_notice', None)
+    elif client is None:
+        started = state.setdefault('browser_wait_since', now)
+        elapsed = now - started
+        if elapsed >= 15 and not state.get('browser_wait_notice'):
+            table('table_status', [['status', 'inference_ms'],
+                  ['Waiting for browser connection; check port and TD Web Render', 0]])
+            state['browser_wait_notice'] = True
+        if elapsed >= 60:
+            state['browser_wait_since'] = now
+            state['browser_wait_notice'] = False
+            table('table_status', [['status', 'inference_ms'],
+                  ['Browser not connected; retrying (check port and TD Web Render)', 0]])
+            comp().op('browser_runtime').par.reload.pulse()
+    else:
+        state.pop('browser_wait_since', None)
+        state.pop('browser_wait_notice', None)
     refresh_custom(now)
     custom_desc = state.get('custom_desc')
     object_text = (str(comp().par.Objectclasses.eval()) + '\n' + str(comp().par.Detector.eval()) +
